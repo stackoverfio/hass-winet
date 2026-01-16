@@ -1,0 +1,10 @@
+{
+  "domain": "winet",
+  "name": "WiNet Stove",
+  "version": "0.1.9",
+  "documentation": "https://example.invalid",
+  "requirements": [],
+  "codeowners": ["@stackoverfio"],
+  "config_flow": true,
+  "iot_class": "local_polling"
+}
