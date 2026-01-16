@@ -2,7 +2,7 @@
 
 Integrazione non ufficiale, ancora in fase sperimentale, sviluppata e mantenuta dalla community.
 
-Integrazione Home Assistant per stufe a pellet equipaggiate con modulo wi-fi smart **WiNet**  
+Integrazione Home Assistant da utilizzare tramite HACS per stufe a pellet equipaggiate con modulo wi-fi smart **WiNet**  
 Supporta **connessione Locale e Cloud**.
 
 ---
