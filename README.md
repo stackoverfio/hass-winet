@@ -26,7 +26,7 @@ Supporta **connessione Locale e Cloud**.
 ## 🔧 Installazione (HACS)
 
 1. HACS → Integrazioni → **Custom repository**
-2. URL: https://github.com/stackoverfio/winet-ha
+2. URL: https://github.com/stackoverfio/hass-winet
 3. Categoria: **Integration**
 4. Installa **WiNet Stove**
 5. Riavvia Home Assistant
