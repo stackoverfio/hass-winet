@@ -46,6 +46,14 @@ function stoveConfig(entities, image) {
   };
 }
 
+function selectedStove(stoves, config) {
+  if (config?.stove) return stoves.find(({ id }) => id === config.stove);
+  if (config?.entity) {
+    return stoves.find(({ entities }) => Object.values(entities).includes(config.entity));
+  }
+  return stoves[0];
+}
+
 class WiNetStoveCard extends HTMLElement {
   static getStubConfig() {
     return { type: "custom:winet-stove-card" };
@@ -80,7 +88,7 @@ class WiNetStoveCard extends HTMLElement {
         window.loadCardHelpers(),
       ]);
       if (this.config !== config) return;
-      const stove = config.stove ? stoves.find(({ id }) => id === config.stove) : stoves[0];
+      const stove = selectedStove(stoves, config);
       if (!stove) {
         this.textContent = "Nessuna stufa WiNet disponibile.";
         return;
@@ -130,7 +138,7 @@ class WiNetStoveCardEditor extends HTMLElement {
   setConfig(config) {
     this.config = config;
     this.image.value = config.image || "";
-    if (this.stoves) this.select.value = config.stove || this.stoves[0]?.id || "";
+    if (this.stoves) this.select.value = selectedStove(this.stoves, config)?.id || "";
   }
 
   set hass(hass) {
@@ -139,7 +147,7 @@ class WiNetStoveCardEditor extends HTMLElement {
     hass.callWS({ type: "winet/stoves" }).then((stoves) => {
       this.stoves = stoves;
       this.select.replaceChildren(...stoves.map(({ id, name }) => new Option(name, id)));
-      this.select.value = this.config?.stove || stoves[0]?.id || "";
+      this.select.value = selectedStove(stoves, this.config)?.id || "";
     }).catch(() => {
       this.select.replaceChildren(new Option("Stufe WiNet non disponibili", ""));
     });
@@ -154,4 +162,10 @@ window.customCards.push({
   name: "WiNet · Stufa a pellet",
   description: "Stato, temperature e comandi della stufa WiNet.",
   preview: true,
+  getEntitySuggestion: (hass, entityId) => {
+    if (!entityId.startsWith("switch.") || hass.entities?.[entityId]?.platform !== "winet") {
+      return null;
+    }
+    return { config: { type: "custom:winet-stove-card", entity: entityId } };
+  },
 });
