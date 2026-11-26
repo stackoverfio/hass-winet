@@ -1,7 +1,7 @@
 {
   "domain": "winet",
   "name": "WiNet Stove",
-  "version": "0.1.9",
+  "version": "1.1.0",
   "documentation": "https://example.invalid",
   "dependencies": ["frontend"],
   "requirements": [],
