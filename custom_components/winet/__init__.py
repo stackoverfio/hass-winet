@@ -7,6 +7,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
+from .dashboard import async_setup_dashboard
 from .api import WiNetApi, WiNetApiError
 from .const import (
     DOMAIN,
@@ -15,15 +16,23 @@ from .const import (
     CONF_STOVE_ID,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
+    MIN_SCAN_INTERVAL,
 )
 
 LOGGER = logging.getLogger(__name__)
 PLATFORMS = ["sensor", "switch", "number"]
 
 
+async def async_setup(hass, config):
+    await async_setup_dashboard(hass)
+    return True
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     mode = entry.data[CONF_MODE]
     scan_interval = entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+    if type(scan_interval) is not int or scan_interval < MIN_SCAN_INTERVAL:
+        scan_interval = DEFAULT_SCAN_INTERVAL
 
     api = WiNetApi(
         hass=hass,

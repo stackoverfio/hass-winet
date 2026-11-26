@@ -10,7 +10,7 @@ from .const import (
     DOMAIN,
     CONF_MODE, MODE_LOCAL, MODE_CLOUD,
     CONF_HOST, CONF_STOVE_ID,
-    CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL,
+    CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, MIN_SCAN_INTERVAL,
     CONF_HAS_WATER, DEFAULT_HAS_WATER,
 )
 from .api import WiNetApi, WiNetApiError
@@ -83,7 +83,9 @@ class WiNetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         schema = vol.Schema({
             vol.Required(CONF_HOST): str,
             vol.Optional(CONF_HAS_WATER, default=DEFAULT_HAS_WATER): bool,
-            vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): vol.Coerce(int),
+            vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): vol.All(
+                vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)
+            ),
         })
 
         return self.async_show_form(
@@ -93,12 +95,11 @@ class WiNetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_cloud(self, user_input=None) -> FlowResult:
-        """Step 2 (Cloud): stove_id + flag acqua + scan interval."""
+        """Step 2 (Cloud): stove_id + scan interval."""
         errors = {}
 
         if user_input is not None:
             stove_id = user_input[CONF_STOVE_ID].strip()
-            has_water = user_input.get(CONF_HAS_WATER, DEFAULT_HAS_WATER)
             scan = user_input.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
 
             api = WiNetApi(
@@ -123,15 +124,15 @@ class WiNetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     data={
                         CONF_MODE: MODE_CLOUD,
                         CONF_STOVE_ID: stove_id,
-                        CONF_HAS_WATER: has_water,
                         CONF_SCAN_INTERVAL: scan,
                     },
                 )
 
         schema = vol.Schema({
             vol.Required(CONF_STOVE_ID): str,
-            vol.Optional(CONF_HAS_WATER, default=DEFAULT_HAS_WATER): bool,
-            vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): vol.Coerce(int),
+            vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): vol.All(
+                vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)
+            ),
         })
 
         return self.async_show_form(

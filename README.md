@@ -2,7 +2,7 @@
 
 Integrazione non ufficiale, ancora in fase sperimentale, sviluppata e mantenuta dalla community.
 
-Integrazione Home Assistant da utilizzare tramite HACS per stufe a pellet equipaggiate con modulo wi-fi smart **WiNet**  
+Integrazione Home Assistant per stufe a pellet equipaggiate con modulo wi-fi smart **WiNet**
 Supporta **connessione Locale e Cloud**.
 
 ---
@@ -26,7 +26,7 @@ Supporta **connessione Locale e Cloud**.
 ## 🔧 Installazione (HACS)
 
 1. HACS → Integrazioni → **Custom repository**
-2. URL: https://github.com/stackoverfio/hass-winet
+2. URL: https://github.com/stackoverfio/winet-ha
 3. Categoria: **Integration**
 4. Installa **WiNet Stove**
 5. Riavvia Home Assistant
@@ -42,9 +42,19 @@ Supporta **connessione Locale e Cloud**.
 
 ### Modalità Cloud
 - Inserisci `stove_id`
-- Seleziona se la stufa è **ad acqua**
 
 ---
+
+## Card per la dashboard
+
+Dopo aver configurato WiNet, apri **Modifica dashboard → Aggiungi card** e cerca
+**WiNet · Stufa a pellet**. La card si collega automaticamente alla prima stufa
+disponibile e include un’illustrazione. Se hai più stufe, puoi selezionare quella
+desiderata nell’editor. Nello stesso editor puoi specificare il percorso di una
+foto già disponibile in Home Assistant.
+
+La card viene caricata dall’integrazione e si aggiunge dalla dashboard. Non
+serve incollare YAML, aggiungere risorse Lovelace o installare Mushroom.
 
 ## 🌡️ Note sulle temperature
 Le stufe WiNet usano **mezzi gradi (0.5°C)**.  

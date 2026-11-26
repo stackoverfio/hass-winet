@@ -3,6 +3,7 @@
   "name": "WiNet Stove",
   "version": "0.1.9",
   "documentation": "https://example.invalid",
+  "dependencies": ["frontend"],
   "requirements": [],
   "codeowners": ["@stackoverfio"],
   "config_flow": true,

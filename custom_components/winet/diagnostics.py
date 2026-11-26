@@ -16,7 +16,9 @@ async def async_get_config_entry_diagnostics(
 
     return {
         "mode": api.mode,
-        "host": getattr(api, "host", None),
         "has_water": config_entry.data.get("has_water", False),
-        "last_data": coordinator.data,
+        "last_data": {
+            key: value for key, value in (coordinator.data or {}).items()
+            if key in {"status", "power", "air", "setAir", "water", "setWater", "gasflue", "rpmExtractor"}
+        },
     }

@@ -47,13 +47,19 @@ class WiNetApi:
                 timeout=aiohttp.ClientTimeout(total=8),
             ) as resp:
                 if resp.status != 200:
-                    raise WiNetApiError(f"HTTP {resp.status} su {url}")
-                return await resp.json(content_type=None)
+                    raise WiNetApiError(f"WiNet ha risposto con HTTP {resp.status}")
+                data = await resp.json(content_type=None)
+                if not isinstance(data, dict):
+                    raise WiNetApiError("Risposta WiNet: atteso un oggetto JSON")
+                return data
+
+        except ValueError:
+            raise WiNetApiError("Risposta WiNet: JSON non valido") from None
 
         except asyncio.TimeoutError as e:
             raise WiNetApiError("Timeout chiamando WiNet") from e
-        except aiohttp.ClientError as e:
-            raise WiNetApiError(f"Errore rete: {e}") from e
+        except aiohttp.ClientError:
+            raise WiNetApiError("Errore di rete comunicando con WiNet") from None
 
     async def _call(self, url: str) -> None:
         # Nel YAML i comandi sono URL GET anche quando 'sembrano' comandi.
@@ -63,12 +69,12 @@ class WiNetApi:
                 timeout=aiohttp.ClientTimeout(total=8),
             ) as resp:
                 if resp.status != 200:
-                    raise WiNetApiError(f"HTTP {resp.status} su {url}")
+                    raise WiNetApiError(f"WiNet ha risposto con HTTP {resp.status}")
 
         except asyncio.TimeoutError as e:
             raise WiNetApiError("Timeout inviando comando WiNet") from e
-        except aiohttp.ClientError as e:
-            raise WiNetApiError(f"Errore rete: {e}") from e
+        except aiohttp.ClientError:
+            raise WiNetApiError("Errore di rete comunicando con WiNet") from None
 
     def _require(self) -> None:
         if self.mode == MODE_LOCAL and not self.host:

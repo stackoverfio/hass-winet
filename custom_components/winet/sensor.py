@@ -6,7 +6,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN, CONF_HAS_WATER
+from .const import DOMAIN, CONF_HAS_WATER, MODE_LOCAL
 from .entity import WiNetEntity
 
 
@@ -50,7 +50,7 @@ async def async_setup_entry(
         WiNetPowerSensor(coordinator, entry_id, mode),
     ]
 
-    if has_water:
+    if mode == MODE_LOCAL and has_water:
         entities += [
             WiNetWaterTempSensor(coordinator, entry_id, mode),
             WiNetSetWaterTempSensor(coordinator, entry_id, mode),

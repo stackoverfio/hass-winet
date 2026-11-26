@@ -5,10 +5,12 @@ import asyncio
 from homeassistant.components.number import NumberEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN, CONF_HAS_WATER
+from .api import WiNetApiError
+from .const import DOMAIN, CONF_HAS_WATER, MODE_LOCAL
 from .entity import WiNetEntity
 
 DEBOUNCE_SECONDS = 2.0
@@ -28,7 +30,7 @@ async def async_setup_entry(
         WiNetSetAirTempNumber(coordinator, entry.entry_id, api.mode, api),
     ]
 
-    if has_water:
+    if api.mode == MODE_LOCAL and has_water:
         entities.append(WiNetSetWaterTempNumber(coordinator, entry.entry_id, api.mode, api))
 
     async_add_entities(entities)
@@ -40,47 +42,32 @@ class _DebouncedNumberBase(WiNetEntity, NumberEntity):
     def __init__(self, coordinator, entry_id: str, mode: str, api):
         super().__init__(coordinator, entry_id, mode)
         self._api = api
-        self._pending_task: asyncio.Task | None = None
-        self._pending_value: float | None = None
+        self._write_lock = asyncio.Lock()
+        self._request_id = 0
+        self._removed = False
 
     async def async_will_remove_from_hass(self) -> None:
-        if self._pending_task and not self._pending_task.done():
-            self._pending_task.cancel()
-
-    def _cancel_pending(self) -> None:
-        if self._pending_task and not self._pending_task.done():
-            self._pending_task.cancel()
-
-    async def _debounced_send(self) -> None:
-        try:
-            await asyncio.sleep(DEBOUNCE_SECONDS)
-            final_val = self._pending_value
-            if final_val is None:
-                return
-
-            await self._send_value(final_val)
-            await self.coordinator.async_request_refresh()
-
-        except asyncio.CancelledError:
-            return
+        self._removed = True
+        await super().async_will_remove_from_hass()
 
     async def _send_value(self, value: float) -> None:
         raise NotImplementedError
 
     async def async_set_native_value(self, value: float) -> None:
-        new_val = float(value)
+        self._request_id += 1
+        request_id = self._request_id
+        await asyncio.sleep(DEBOUNCE_SECONDS)
 
-        current = self.native_value
-        if current is not None:
+        async with self._write_lock:
+            if self._removed or request_id != self._request_id:
+                return
+
             try:
-                if abs(float(current) - new_val) < 1e-6:
-                    return
-            except (TypeError, ValueError):
-                pass
+                await self._send_value(value)
+            except WiNetApiError as err:
+                raise HomeAssistantError(str(err)) from err
 
-        self._pending_value = new_val
-        self._cancel_pending()
-        self._pending_task = asyncio.create_task(self._debounced_send())
+            await self.coordinator.async_request_refresh()
 
 
 class WiNetSetPowerNumber(_DebouncedNumberBase):
